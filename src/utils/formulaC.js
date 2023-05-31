@@ -28,7 +28,7 @@ export const getMinAgentsCount = ({ queue, average, intensity, time }) => {
     const waitingTimeInLineResult = waitingTimeInLine(placementProbabilityResult, traffic, time);
     result = {
       ...result,
-      [lines]: [lastValuePreLines.toFixed(4), placementProbabilityResult.toFixed(4), waitingTimeInLineResult.toFixed(4), traffic],
+      [lines]: [lastValuePreLines.toFixed(10), placementProbabilityResult.toFixed(10), waitingTimeInLineResult.toFixed(10), traffic],
     };
     lines++;
   }

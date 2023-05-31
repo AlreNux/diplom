@@ -16,14 +16,24 @@ export const ErlangBState = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState(false);
+  const [errorMessageCall, setErrorMessageCall] = useState("");
+  const [errorMessageLines, setErrorMessageLines] = useState("");
+  const [errorMessageTraffic, setErrorMessageTraffic] = useState("");
 
   const handleCheck = (type) => {
     setInfo(defaultInfo);
+    setError(false);
+    setErrorMessageCall("");
+    setErrorMessageLines("");
+    setErrorMessageTraffic("");
     setErlangBType(type);
   };
 
   const handleChange = (e) => {
     setError(false);
+    setErrorMessageCall("");
+    setErrorMessageLines("");
+    setErrorMessageTraffic("");
     const fieldName = e.target.name;
     setInfo((info) => ({
       ...info,
@@ -31,44 +41,89 @@ export const ErlangBState = () => {
     }));
   };
 
+  const errorHandlerCall = () => {
+    return !info.call || info.call >= 1 || info.call <= 0;
+  };
+
+  const errorHandlerLines = () => {
+    return !info.lines || info.lines <= 0 || !Number.isInteger(Number(info.lines)) || info.lines > 180;
+  };
+
+  const errorHandlerTraffic = () => {
+    return !info.traffic || info.traffic <= 0 || info.traffic > 180;
+  };
+
   const handleSubmit = () => {
     setError(false);
     switch (erlangBType) {
       case "call":
-        if (
-          !info.lines ||
-          !info.traffic ||
-          info.lines <= 0 ||
-          info.traffic <= 0 ||
-          !Number.isInteger(Number(info.lines)) ||
-          info.lines > 180 ||
-          info.traffic > 180
-        ) {
+        if (errorHandlerTraffic() || errorHandlerLines()) {
           setError(true);
+          if (!info.traffic) {
+            setErrorMessageTraffic("Поле должно быть заполнено");
+          } else if (info.traffic <= 0) {
+            setErrorMessageTraffic("Число должно быть больше 0");
+          } else if (info.traffic > 180) {
+            setErrorMessageTraffic("Трафик не может превышать 180");
+          }
+
+          if (!info.lines) {
+            setErrorMessageLines("Поле должно быть заполнено");
+          } else if (info.lines <= 0) {
+            setErrorMessageLines("Число должно быть больше 0");
+          } else if (!Number.isInteger(Number(info.lines))) {
+            setErrorMessageLines("Количество линий должно быть целом числом");
+          } else if (info.lines > 180) {
+            setErrorMessageLines("Количество линий не может превышать 180");
+          }
           return;
         }
         setResult(getCallResult(info));
         setShowModal(true);
         break;
       case "lines":
-        if (!info.call || !info.traffic || info.call >= 1 || info.call <= 0 || info.traffic <= 0 || info.traffic > 180) {
+        if (errorHandlerTraffic() || errorHandlerCall()) {
           setError(true);
+          if (!info.traffic) {
+            setErrorMessageTraffic("Поле должно быть заполнено");
+          } else if (info.traffic <= 0) {
+            setErrorMessageTraffic("Число должно быть больше 0");
+          } else if (info.traffic > 180) {
+            setErrorMessageTraffic("Трафик не может превышать 180");
+          }
+
+          if (!info.call) {
+            setErrorMessageCall("Поле должно быть заполнено");
+          } else if (info.call <= 0) {
+            setErrorMessageCall("Число должно быть больше 0");
+          } else if (info.call >= 1) {
+            setErrorMessageCall("Вероятность потери вызова не может быть больше или равно 1");
+          }
           return;
         }
         setResult(getLinesResult(info));
         setShowModal(true);
         break;
       case "traffic":
-        if (
-          !info.lines ||
-          !info.call ||
-          info.lines <= 0 ||
-          info.call <= 0 ||
-          !Number.isInteger(Number(info.lines)) ||
-          info.lines > 180 ||
-          info.call >= 1
-        ) {
+        if (errorHandlerLines() || errorHandlerCall()) {
           setError(true);
+          if (!info.lines) {
+            setErrorMessageLines("Поле должно быть заполнено");
+          } else if (info.lines <= 0) {
+            setErrorMessageLines("Число должно быть больше 0");
+          } else if (!Number.isInteger(Number(info.lines))) {
+            setErrorMessageLines("Количество линий должно быть целом числом");
+          } else if (info.lines > 180) {
+            setErrorMessageLines("Количество линий не может превышать 180");
+          }
+
+          if (!info.call) {
+            setErrorMessageCall("Поле должно быть заполнено");
+          } else if (info.call <= 0) {
+            setErrorMessageCall("Число должно быть больше 0");
+          } else if (info.lines >= 1) {
+            setErrorMessageCall("Вероятность потери вызова не может быть больше или равно 1");
+          }
           return;
         }
         setResult(getTrafficResult(info));
@@ -95,7 +150,11 @@ export const ErlangBState = () => {
   return (
     <>
       <div className="main__formula">
-        <img src={erlangB} alt="erlangB формула" width={700} height={150} />
+        <picture>
+          <source srcSet={erlangB} width="700" height="150" media="(min-width: 1001px)" type="image/png" />
+          <source srcSet={erlangB} width="500" height="100" media="(min-width: 1px)" type="image/png" />
+          <img src={erlangB} alt="erlangB формула" width={500} height={100} />
+        </picture>
       </div>
       <div className="form__radio__group">
         <div className="form__radio__group-item">
@@ -118,52 +177,61 @@ export const ErlangBState = () => {
         {erlangBType === "traffic" && "калькулятор находит предлагаемый трафик из потери вызова за заданное число линий."}
       </h3>
       {erlangBType !== "call" && (
-        <label htmlFor="Probability of losing a call" className="label">
-          <span className="label__text">Вероятность потери вызова: (E(r,a))</span>
-          <input
-            placeholder="Введите число (от 0.001 до 0.999)"
-            type="number"
-            name="call"
-            id="Probability of losing a call"
-            className="input__container"
-            value={info.call}
-            onChange={handleChange}
-            // eslint-disable-next-line jsx-a11y/aria-props
-            aria-invalid={error && (!info.call || info.call >= 1 || info.call <= 0)}
-          />
-        </label>
+        <div>
+          <label htmlFor="Probability of losing a call" className="label">
+            <p className="label__text">Вероятность потери вызова: (E(r,a))</p>
+            <input
+              placeholder="Введите число (от 0.001 до 0.999)"
+              type="number"
+              name="call"
+              id="Probability of losing a call"
+              className="input__container"
+              value={info.call}
+              onChange={handleChange}
+              // eslint-disable-next-line jsx-a11y/aria-props
+              aria-invalid={error && errorHandlerCall()}
+            />
+          </label>
+          {errorMessageCall && errorHandlerCall() && <div className="label__error">{errorMessageCall}</div>}
+        </div>
       )}
       {erlangBType !== "lines" && (
-        <label htmlFor="Number of lines" className="label">
-          <span className="label__text">Количество линий: (r)</span>
-          <input
-            placeholder="Введите число (от 1 до 180)"
-            type="number"
-            name="lines"
-            id="Number of lines"
-            className="input__container"
-            value={info.lines}
-            onChange={handleChange}
-            // eslint-disable-next-line jsx-a11y/aria-props
-            aria-invalid={error && (!info.lines || info.lines <= 0 || info.lines > 180 || !Number.isInteger(Number(info.lines)))}
-          />
-        </label>
+        <div>
+          <label htmlFor="Number of lines" className="label">
+            <p className="label__text">Количество линий: (r)</p>
+            <input
+              placeholder="Введите число (от 1 до 180)"
+              type="number"
+              name="lines"
+              id="Number of lines"
+              className="input__container"
+              value={info.lines}
+              onChange={handleChange}
+              // eslint-disable-next-line jsx-a11y/aria-props
+              aria-invalid={error && errorHandlerLines()}
+            />
+          </label>
+          {errorMessageLines && errorHandlerLines() && <div className="label__error">{errorMessageLines}</div>}
+        </div>
       )}
       {erlangBType !== "traffic" && (
-        <label htmlFor="Offered traffic" className="label">
-          <span className="label__text">Предлагаемый трафик: (a)</span>
-          <input
-            placeholder="Введите число (от 0.1 до 180)"
-            type="number"
-            name="traffic"
-            id="Offered traffic"
-            className="input__container"
-            value={info.traffic}
-            onChange={handleChange}
-            // eslint-disable-next-line jsx-a11y/aria-props
-            aria-invalid={error && (!info.traffic || info.traffic <= 0 || info.traffic > 180)}
-          />
-        </label>
+        <div>
+          <label htmlFor="Offered traffic" className="label">
+            <p className="label__text">Предлагаемый трафик: (a)</p>
+            <input
+              placeholder="Введите число (от 0.1 до 180)"
+              type="number"
+              name="traffic"
+              id="Offered traffic"
+              className="input__container"
+              value={info.traffic}
+              onChange={handleChange}
+              // eslint-disable-next-line jsx-a11y/aria-props
+              aria-invalid={error && errorHandlerTraffic()}
+            />
+          </label>
+          {errorMessageTraffic && errorHandlerTraffic() && <div className="label__error">{errorMessageTraffic}</div>}
+        </div>
       )}
       <div className="submit__container">
         <button type="button" className="main__button main__button--submit" onClick={handleSubmit}>
@@ -180,9 +248,9 @@ export const ErlangBState = () => {
                     {erlangBType === "call" && (
                       <>
                         <p className="modal__children__items" aria-invalid={val[0] === info.lines}>{`r = ${val[0]},`}</p>
-                        <p className="modal__children__items" aria-invalid={val[0] === info.lines}>{`E(${val[0]}, ${
-                          info.traffic
-                        }) = ${val[1].toPrecision(10)}`}</p>
+                        <p className="modal__children__items" aria-invalid={val[0] === info.lines}>{`E(${val[0]}, ${info.traffic}) = ${val[1].toPrecision(
+                          10
+                        )}`}</p>
                       </>
                     )}
 
@@ -197,9 +265,9 @@ export const ErlangBState = () => {
                         <p style={{ paddingTop: "16px" }} className="modal__children__items" aria-invalid={true}>
                           {`r = ${Number(val[0]) + 1},`}
                         </p>
-                        <p style={{ paddingTop: "16px" }} className="modal__children__items" aria-invalid={true}>{`E(${val[0]}, ${
-                          info.traffic
-                        }) < ${info.call} => r = ${Number(val[0]) + 1}`}</p>
+                        <p style={{ paddingTop: "16px" }} className="modal__children__items" aria-invalid={true}>{`E(${val[0]}, ${info.traffic}) < ${
+                          info.call
+                        } => r = ${Number(val[0]) + 1}`}</p>
                       </>
                     )}
 
@@ -224,6 +292,9 @@ export const ErlangBState = () => {
                   </div>
                 );
               })}
+            <button type="button" onClick={() => setShowModal(false)} className="backstep__button">
+              ← Закрыть
+            </button>
           </div>
         </ModalContainer>
       )}

@@ -78,3 +78,23 @@
 .modal__children {
     padding: 40px;
 }
+
+@media (max-width: 1001px) {
+    .modal {
+        top: 0;
+        left: 0;
+        transform: translate(0, 0);
+        border-radius: 0px;
+        height: 100%;
+        margin: 0;
+        max-height: 100%;
+    }
+
+    .modal__title {
+        font-size: 18px;
+    }
+
+    .modal__children {
+        padding: 20px;
+    }
+}

@@ -46,7 +46,7 @@ export const getTrafficResult = ({ lines, call }) => {
   while (lastValuePreLines < c) {
     const preLines = getCallResult({ lines, traffic });
     const valuePreLines = Object.values(preLines);
-    lastValuePreLines = valuePreLines[valuePreLines.length - 1].toFixed(3);
+    lastValuePreLines = valuePreLines[valuePreLines.length - 1];
     result = { ...result, [traffic]: Number(lastValuePreLines) };
     traffic++;
   }

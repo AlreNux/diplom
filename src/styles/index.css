@@ -192,7 +192,7 @@ body {
 
 .modal__children__items__container--c {
   display: grid;
-  grid-template-columns: 0.4fr 1.7fr 1.7fr 1.7fr;;
+  grid-template-columns: 0.3fr 1.7fr 1.7fr 1.8fr;;
 }
 
 .modal__children__items__container--default {
@@ -221,17 +221,6 @@ body {
     font-size: 20px;
   }
 
-  .form__radio__group {
-    flex-direction: column;
-  }
-
-  .form__radio__group-item {
-    padding-top: 10px;
-  }
-
-  .form__radio__group-item:first-child {
-    padding-top: 0;
-  }
 
   .main__title {
     font-size: 20px;
@@ -250,7 +239,7 @@ body {
 
   .input__container {
     margin-left: 0;
-    width: 270px;
+    width: 100%;
   }
 
   .modal__children__items__container--b {

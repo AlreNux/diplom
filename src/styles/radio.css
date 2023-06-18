@@ -48,3 +48,24 @@
 	background: #efefef;
 	color: #ffffff;
 }
+
+@media (max-width: 1001px) {
+
+	.form__radio__group label {
+		width: 100%;
+		border-right: 1px solid #ffffff;
+		border-radius: 6px !important;
+	}
+
+	.form__radio__group {
+		flex-direction: column;
+	  }
+	
+	  .form__radio__group-item {
+		padding-top: 10px;
+	  }
+	
+	  .form__radio__group-item:first-child {
+		padding-top: 0;
+	  }
+}
